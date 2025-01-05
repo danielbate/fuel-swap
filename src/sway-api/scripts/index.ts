@@ -10,4 +10,6 @@
   Fuel-Core version: 0.40.1
 */
 
-export { TestScript } from './TestScript';
+export { AtomicAddLiquidity } from './AtomicAddLiquidity';
+export { SwapExactInput } from './SwapExactInput';
+export { SwapExactOutput } from './SwapExactOutput';
