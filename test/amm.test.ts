@@ -2,7 +2,7 @@ import { launchTestNode } from "fuels/test-utils";
 import { describe, test, expect } from "vitest";
 
 import { TestAssetId } from "fuels/test-utils";
-import { AMMContractFactory, ExchangeContractFactory } from "../src/sway-api";
+import { AMMContractFactory, ExchangeContractFactory, AtomicAddLiquidity  } from "../src/sway-api";
 import { ContractUtils } from "fuels";
 
 describe("AMM", () => {
@@ -47,5 +47,38 @@ describe("AMM", () => {
     const poolTx = await ammContract.functions.pool([assetIdAWrapped, baseAssetIdWrapped]).call();
     const poolTxResult = await poolTx.waitForResult();
     expect(poolTxResult.value).toStrictEqual(exchangeContractIdWrapped);
+
+    // Add liquidity to exchange contract
+    const addLiquidityScript = new AtomicAddLiquidity(genesisWallet);
+    const amount = 100;
+    const addLiquidityTxRequest = await addLiquidityScript.functions.main(exchangeContractIdWrapped, {
+      deposits: { 
+        a: {
+          id: assetIdAWrapped,
+          amount,
+        },
+        b: {
+          id: baseAssetIdWrapped,
+          amount,
+        },
+      },
+      liquidity: amount,
+      deadline: 1_000
+    }).addContracts([ammContract, exchangeContract]).getTransactionRequest();
+    const quantities = await genesisWallet.getResourcesToSpend([{
+      assetId: assetIdA,
+      amount,
+    }, {
+      assetId: baseAssetId,
+      amount,
+    }]);
+    addLiquidityTxRequest.addResources(quantities);
+    const txCost = await genesisWallet.getTransactionCost(addLiquidityTxRequest);
+    addLiquidityTxRequest.gasLimit = txCost.gasUsed;
+    addLiquidityTxRequest.maxFee = txCost.maxFee;
+    await genesisWallet.fund(addLiquidityTxRequest, txCost);
+
+    const addLiquidityTx = await genesisWallet.sendTransaction(addLiquidityTxRequest);
+    await addLiquidityTx.waitForResult();
   });
 });
