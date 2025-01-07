@@ -9,7 +9,7 @@
     "build": "npm run prebuild && tsc -b && vite build",
     "lint": "eslint .",
     "fuels:dev": "fuels dev",
-    "test": "vitest"
+    "test": "vitest --run"
   },
   "dependencies": {
     "@fuels/connectors": "^0.27.1",

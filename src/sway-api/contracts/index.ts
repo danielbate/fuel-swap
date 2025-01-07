@@ -14,5 +14,3 @@ export { AMMContract } from './AMMContract';
 export { AMMContractFactory } from './AMMContractFactory';
 export { ExchangeContract } from './ExchangeContract';
 export { ExchangeContractFactory } from './ExchangeContractFactory';
-export { MaliciousImplementation } from './MaliciousImplementation';
-export { MaliciousImplementationFactory } from './MaliciousImplementationFactory';

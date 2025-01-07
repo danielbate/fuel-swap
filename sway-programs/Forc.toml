@@ -2,7 +2,6 @@
 members = [
   "./AMM-contract",
   "./exchange-contract",
-  "./test-utils/test-artifacts/malicious-implementation",
   "./atomic-add-liquidity",
   "./swap-exact-input",
   "./swap-exact-output",
