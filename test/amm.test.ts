@@ -14,6 +14,8 @@ describe("AMM", () => {
     const baseAssetId = await provider.getBaseAssetId();
     const assetIdA = TestAssetId.A.value;
     const wrapAddress = (address: string) => ({ bits: address });
+    const baseAssetIdWrapped = wrapAddress(baseAssetId);
+    const assetIdAWrapped = wrapAddress(assetIdA);
 
     const initBaseAssetBalance = await genesisWallet.getBalance(baseAssetId);
     const initAssetABalance = await genesisWallet.getBalance(assetIdA);
@@ -24,14 +26,22 @@ describe("AMM", () => {
     const exchangeDeployTx = await ExchangeContractFactory.deploy(genesisWallet);
     const { contract: exchangeContract}  = await exchangeDeployTx.waitForResult();
     const exchangeBytecodeRoot = ContractUtils.getContractRoot(ExchangeContractFactory.bytecode);
-    console.log(exchangeBytecodeRoot);
+    const exchangeContractId = exchangeContract.id.toB256();
+    const exchangeContractIdWrapped = wrapAddress(exchangeContractId);
 
-    const initExchangeTx = await exchangeContract.functions.constructor(wrapAddress(assetIdA), wrapAddress(baseAssetId)).call();
+    const initExchangeTx = await exchangeContract.functions.constructor(assetIdAWrapped, baseAssetIdWrapped).call();
     await initExchangeTx.waitForResult();
 
     const ammDeployTx = await AMMContractFactory.deploy(genesisWallet);
     const { contract: ammContract } = await ammDeployTx.waitForResult();
     const initAmmContract = await ammContract.functions.initialize(wrapAddress(exchangeBytecodeRoot)).call();
     await initAmmContract.waitForResult();
+
+    const addPoolTx = await ammContract.functions.add_pool([assetIdAWrapped, baseAssetIdWrapped], exchangeContractIdWrapped).call();
+    await addPoolTx.waitForResult();
+
+    const poolTx = await ammContract.functions.pool([assetIdAWrapped, baseAssetIdWrapped]).call();
+    const poolTxResult = await poolTx.waitForResult();
+    expect(poolTxResult.value).toStrictEqual(exchangeContractIdWrapped);
   });
 });
